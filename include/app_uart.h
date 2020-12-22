@@ -38,9 +38,13 @@ namespace comm{
             .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
             .source_clk = UART_SCLK_APB,
         };
-        enum FW_ {};
-        enum SFW_ {};
-        int *(*handler)(FW_ FW, SFW_ SFW, uint8_t* data) = nullptr;
+        /**
+         * @brief FW_HB: Heart Beat
+         * 
+         */
+        enum FW_ {FW_HB = 0};
+        enum SFW_ {SFW_RESQUEST = 0,SFW_RESPOND = 1};
+        int *(*handler)(FW_ FW, SFW_ SFW, uint8_t* data, app_uart* pt) = nullptr;
         int init();//Must register handler before init
         int send(FW_ FW, SFW_ SFW, uint8_t* data);
         app_uart(int UART_NUM_,int txPin_, int rxPin_,uint8_t FRAME_HEAD_ = 0xAF,uint8_t FRAME_END_ = 0xFF);

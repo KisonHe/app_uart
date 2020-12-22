@@ -55,7 +55,7 @@ namespace comm
                     uart_read_bytes(thispt->UART_NUM, dtmp, event.size, portMAX_DELAY);
                     if (is_frame_right(dtmp, thispt) == 0)
                     {
-                        thispt->handler(dtmp[1],dtmp[2],&dtmp[3])
+                        thispt->handler(static_cast<FW_>(dtmp[1]),static_cast<SFW_>(dtmp[2]),&dtmp[3],thispt);
                         //[todo]huihui's buffer;
                     }
                     break;
@@ -82,8 +82,7 @@ namespace comm
      * 
      * @return int -1 if handler not registed
      */
-    int app_uart::init()
-    {
+    int app_uart::init(){
         if (handler == nullptr)
             return -1;
         ESP_ERROR_CHECK(uart_driver_install(UART_NUM, BUF_SIZE * 2, BUF_SIZE * 2, 10, &uart_queue, 0));
@@ -91,8 +90,28 @@ namespace comm
         return xTaskCreate(uart_event_task, "uart_event_task", 2048, this, 12, &xHandle); 
         //[todo] try if this work with mutil app_uart instance. and also destructor
     }
-    int app_uart::is_frame_right(uint8_t *RxData, app_uart* pt)
-    {
+
+    int app_uart::send(FW_ FW, SFW_ SFW, uint8_t* data){
+        static uint8_t Message[22];
+        uint8_t tmp_sum = 0;
+        memset(Message, 0, sizeof(Message));
+        Message[0] = FRAME_HEAD;
+        Message[1] = FW;
+        Message[2] = SFW;
+        memcpy(&Message[3], data, 16);
+        for (int i = 1; i < 19; i++) {
+            tmp_sum += Message[i];
+        }
+        Message[19] = tmp_sum;
+        Message[20] = FRAME_END;
+        return uart_write_bytes(this->UART_NUM, (const char*)Message, sizeof(Message));
+    }
+
+
+
+
+
+    int app_uart::is_frame_right(uint8_t *RxData, app_uart* pt){
         if ((RxData[0] == pt->FRAME_HEAD) && (RxData[20] == pt->FRAME_END))
         {
             uint8_t tmp_sum = 0;
