@@ -26,7 +26,7 @@ namespace comm{
         int txPin = 0;
         int rxPin = 0;
         static int is_frame_right(uint8_t* RxData, app_uart* pt);
-        static QueueHandle_t uart_queue;
+        QueueHandle_t uart_queue;
         /* data */
     public:
         static const int BUF_SIZE = 512;
@@ -42,9 +42,9 @@ namespace comm{
          * @brief FW_HB: Heart Beat
          * 
          */
-        enum FW_ {FW_HB = 0};
+        enum FW_ {FW_HB = 0,FW_OPEN = 1,FW_CLOSE = 2};
         enum SFW_ {SFW_RESQUEST = 0,SFW_RESPOND = 1};
-        int *(*handler)(FW_ FW, SFW_ SFW, uint8_t* data, app_uart* pt) = nullptr;
+        int (*handler)(FW_ FW, SFW_ SFW, uint8_t* data, app_uart* pt) = nullptr;
         int init();//Must register handler before init
         int send(FW_ FW, SFW_ SFW, uint8_t* data);
         app_uart(int UART_NUM_,int txPin_, int rxPin_,uint8_t FRAME_HEAD_ = 0xAF,uint8_t FRAME_END_ = 0xFF);
